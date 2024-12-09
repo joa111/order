@@ -12,7 +12,9 @@ const supabase = createClient(
     process.env.SUPABASE_KEY.trim()
 );
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL
+  }));
 app.use(bodyParser.json());
 
 // Health check route
@@ -235,30 +237,6 @@ app.patch('/orders/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
-app.get('/auth/google', (req, res) => {
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?
-      client_id=${process.env.GOOGLE_CLIENT_ID}
-      &redirect_uri=${process.env.GOOGLE_REDIRECT_URL}
-      &response_type=code
-      &scope=https://www.googleapis.com/auth/calendar.events
-      &access_type=offline
-    `;
-    res.redirect(url);
-  });
-  app.get('/auth/google/callback', async (req, res) => {
-    const { code } = req.query;
-    
-    // Exchange code for tokens
-    const { tokens } = await oauth2Client.getToken(code);
-    
-    // Store these tokens securely
-    console.log('Access Token:', tokens.access_token);
-    console.log('Refresh Token:', tokens.refresh_token);
-    
-    // Redirect to your app
-    res.redirect('/');
-  });
 // Start the server
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
